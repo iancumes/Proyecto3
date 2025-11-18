@@ -1,0 +1,58 @@
+---
+# MT 2: ALTERADORA - Intercambia a <-> b en toda la cadena
+
+q_states:
+  q_list:
+    - '0'   # recorre la cinta de izquierda a derecha
+    - '5'   # estado de aceptación (halt)
+  initial: '0'
+  final: '5'
+
+alphabet:
+  - a
+  - b
+
+tape_alphabet:
+  - a
+  - b
+  -     # blank
+
+delta:
+  # En estado 0, si leemos 'a', la cambiamos por 'b' y avanzamos a la derecha.
+  - params:
+      initial_state: '0'
+      mem_cache_value:
+      tape_input: a
+    output:
+      final_state: '0'
+      mem_cache_value:
+      tape_output: b
+      tape_displacement: R
+
+  # En estado 0, si leemos 'b', la cambiamos por 'a' y avanzamos a la derecha.
+  - params:
+      initial_state: '0'
+      mem_cache_value:
+      tape_input: b
+    output:
+      final_state: '0'
+      mem_cache_value:
+      tape_output: a
+      tape_displacement: R
+
+  # Cuando encontramos blank, nos detenemos en el estado final 5.
+  - params:
+      initial_state: '0'
+      mem_cache_value:
+      tape_input:
+    output:
+      final_state: '5'
+      mem_cache_value:
+      tape_output:
+      tape_displacement: S
+
+simulation_strings:
+  - aaabb
+  - abbba
+  - aaaaa
+  - bbaab

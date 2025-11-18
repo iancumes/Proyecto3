@@ -1,0 +1,147 @@
+---
+# MT 1: RECONOCEDORA de L = { a^n b^n | n >= 1 }
+
+q_states:
+  q_list:
+    - '0'   # q0: buscar la siguiente 'a' sin marcar
+    - '1'   # q1: buscar la 'b' correspondiente a la derecha
+    - '2'   # q2: regresar al inicio (lado izquierdo)
+    - '5'   # q5: estado de aceptación
+  initial: '0'
+  final: '5'
+
+alphabet:
+  - a
+  - b
+
+tape_alphabet:
+  - a
+  - b
+  - X
+  -     # blank (None)
+
+delta:
+  # --- Estado 0: buscar la siguiente 'a' sin marcar ---
+  # Si vemos X, solo seguimos a la derecha.
+  - params:
+      initial_state: '0'
+      mem_cache_value:
+      tape_input: X
+    output:
+      final_state: '0'
+      mem_cache_value:
+      tape_output: X
+      tape_displacement: R
+
+  # Si vemos una 'a' sin marcar, la marcamos como X y vamos a buscar una 'b'.
+  - params:
+      initial_state: '0'
+      mem_cache_value:
+      tape_input: a
+    output:
+      final_state: '1'
+      mem_cache_value:
+      tape_output: X
+      tape_displacement: R
+
+  # Si llegamos al blank sin encontrar más 'a' o 'b', todo debe ser X => aceptar.
+  - params:
+      initial_state: '0'
+      mem_cache_value:
+      tape_input:
+    output:
+      final_state: '5'
+      mem_cache_value:
+      tape_output:
+      tape_displacement: S
+
+  # Nota: NO hay transición para estado 0 leyendo 'b'.
+  # Si esto ocurre, la MT se detiene en un estado no final => cadena rechazada.
+
+  # --- Estado 1: buscar la 'b' correspondiente a la derecha ---
+  # Saltar X a la derecha.
+  - params:
+      initial_state: '1'
+      mem_cache_value:
+      tape_input: X
+    output:
+      final_state: '1'
+      mem_cache_value:
+      tape_output: X
+      tape_displacement: R
+
+  # Saltar 'a' (entrada inválida, pero dejamos que falle al no encontrar 'b').
+  - params:
+      initial_state: '1'
+      mem_cache_value:
+      tape_input: a
+    output:
+      final_state: '1'
+      mem_cache_value:
+      tape_output: a
+      tape_displacement: R
+
+  # Cuando encontramos una 'b' sin marcar, la marcamos con X y regresamos a la izquierda.
+  - params:
+      initial_state: '1'
+      mem_cache_value:
+      tape_input: b
+    output:
+      final_state: '2'
+      mem_cache_value:
+      tape_output: X
+      tape_displacement: L
+
+  # Nota: NO hay transición en estado 1 leyendo blank.
+  # Si llegamos al blank sin encontrar 'b' para una 'a' marcada, se detiene en estado 1 (no final) => rechazo.
+
+  # --- Estado 2: regresar a la izquierda hasta el blank para volver a 0 ---
+  - params:
+      initial_state: '2'
+      mem_cache_value:
+      tape_input: X
+    output:
+      final_state: '2'
+      mem_cache_value:
+      tape_output: X
+      tape_displacement: L
+
+  - params:
+      initial_state: '2'
+      mem_cache_value:
+      tape_input: a
+    output:
+      final_state: '2'
+      mem_cache_value:
+      tape_output: a
+      tape_displacement: L
+
+  - params:
+      initial_state: '2'
+      mem_cache_value:
+      tape_input: b
+    output:
+      final_state: '2'
+      mem_cache_value:
+      tape_output: b
+      tape_displacement: L
+
+  # Cuando llegamos al blank por la izquierda, avanzamos una celda a la derecha y volvemos a 0.
+  - params:
+      initial_state: '2'
+      mem_cache_value:
+      tape_input:
+    output:
+      final_state: '0'
+      mem_cache_value:
+      tape_output:
+      tape_displacement: R
+
+simulation_strings:
+  # Cadenas aceptadas (longitud >= 5)
+  - aaabbb      # 3 a, 3 b
+  - aaaabbbb    # 4 a, 4 b
+
+  # Cadenas rechazadas (longitud >= 5)
+  - aaabb       # 3 a, 2 b
+  - aabbbb      # 2 a, 4 b
